@@ -5,7 +5,6 @@ import sys
 # Laad BPM-gegevens uit pdf
 @st.cache_data
 def load_bpm_data():
-    # BPM tarieven op basis van de PDF
     data = {
         "Jaar": list(range(2013, 2026)),
         "Testmethode": [
@@ -78,8 +77,8 @@ for label, color, value in [
     ("Rest BPM op basis van Taxatie", "red", "Later beschikbaar")
 ]:
     st.markdown(f"""
-    <div style='padding: 10px; border-radius: 5px; border: 2px solid {color}; width: 100%; text-align: center;'>
-        <b>{label}</b><br>
+    <div style='text-align: left; font-weight: bold; padding-top: 10px;'>{label}</div>
+    <div style='padding: 15px; border-radius: 8px; border: 2px solid {color}; width: 80%; margin: 5px auto; text-align: center; font-size: 20px;'>
         {value}
     </div>
     """, unsafe_allow_html=True)
