@@ -66,7 +66,7 @@ with col1:
         bruto_bpm, rest_bpm_tabel = calculate_bpm(year, co2_emission, fuel_type, leeftijd)
         st.session_state.bruto_bpm = bruto_bpm
         st.session_state.rest_bpm_tabel = rest_bpm_tabel
-        st.experimental_rerun()
+        st.rerun()
 
 if "bruto_bpm" in st.session_state:
     st.subheader("Resultaten")
