@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import sys
 
 # Laad BPM-gegevens
 @st.cache_data
@@ -74,6 +75,6 @@ if "bruto_bpm" in st.session_state:
     st.write(f"**Actuele Bruto BPM:** Nog niet beschikbaar")
     st.write(f"**Rest BPM op basis van Afschrijvingstabel:** €{st.session_state.rest_bpm_tabel:,.2f}")
     st.write(f"**Rest BPM op basis van Taxatie:** Later beschikbaar")
-import streamlit as st
-import sys
+
+# Toon huidige Python-versie
 st.write(f"Python versie: {sys.version}")
