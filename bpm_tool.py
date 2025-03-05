@@ -77,8 +77,8 @@ for label, color, value in [
     ("Rest BPM op basis van Taxatie", "red", "Later beschikbaar")
 ]:
     st.markdown(f"""
-    <div style='text-align: left; font-weight: bold; padding-top: 10px;'>{label}</div>
-    <div style='padding: 15px; border-radius: 8px; border: 2px solid {color}; width: 80%; margin: 5px auto; text-align: center; font-size: 20px;'>
+    <div style='text-align: left; font-weight: bold; padding-top: 5px;'>{label}</div>
+    <div style='padding: 10px; border-radius: 5px; border: 2px solid {color}; width: 50%; text-align: left; font-size: 18px;'>
         {value}
     </div>
     """, unsafe_allow_html=True)
