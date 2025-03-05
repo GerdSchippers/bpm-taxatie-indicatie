@@ -47,6 +47,7 @@ with col1:
     st.header("Bereken BPM")
     eerste_toelating = st.date_input("Eerste toelating voertuig", min_value=date(2013, 1, 1), max_value=date.today())
     co2_emission = st.number_input("CO₂-uitstoot (g/km)", min_value=0, max_value=500, value=100)
+    fuel_type = st.selectbox("Brandstofsoort", ["Benzine", "Diesel", "PHEV", "EV"])
     
     if st.button("Bereken BPM"):
         bruto_bpm, rest_bpm_tabel = calculate_bpm(co2_emission, eerste_toelating)
