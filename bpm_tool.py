@@ -22,7 +22,7 @@ Afschrijvingstabellen = {
 @st.cache_data
 def calculate_bpm(co2_emission, fuel_type, eerste_toelating):
     year = eerste_toelating.year
-    bpm_tarieven = BPM_TARIEVEN.get(int(year), BPM_TARIEVEN[2025])
+    bpm_tarieven = BPM_TARIEVEN.get(int(year), [(0, 100, BPM_TARIEVEN[2025])])
     afschrijving_tabel = Afschrijvingstabellen.get(year, Afschrijvingstabellen[2025])
     
     if eerste_toelating > date.today():
