@@ -2,9 +2,10 @@ import streamlit as st
 import pandas as pd
 import sys
 
-# Laad BPM-gegevens
+# Laad BPM-gegevens uit pdf
 @st.cache_data
 def load_bpm_data():
+    # BPM tarieven op basis van de PDF
     data = {
         "Jaar": list(range(2013, 2026)),
         "Testmethode": [
@@ -69,26 +70,18 @@ with col1:
         st.session_state.rest_bpm_tabel = rest_bpm_tabel
         st.rerun()
 
-if "bruto_bpm" in st.session_state:
-    st.subheader("Resultaten")
-    with st.container():
-        st.markdown("""
-        <div style='border: 2px solid green; padding: 10px; border-radius: 10px;'>
-            <b>Historische Bruto BPM:</b> €{:.2f}
-        </div>
-        <br>
-        <div style='border: 2px solid orange; padding: 10px; border-radius: 10px;'>
-            <b>Actuele Bruto BPM:</b> Nog niet beschikbaar
-        </div>
-        <br>
-        <div style='border: 2px solid blue; padding: 10px; border-radius: 10px;'>
-            <b>Rest BPM op basis van Afschrijvingstabel:</b> €{:.2f}
-        </div>
-        <br>
-        <div style='border: 2px solid red; padding: 10px; border-radius: 10px;'>
-            <b>Rest BPM op basis van Taxatie:</b> Later beschikbaar
-        </div>
-        """.format(st.session_state.bruto_bpm, st.session_state.rest_bpm_tabel), unsafe_allow_html=True)
+st.subheader("Resultaten")
+for label, color, value in [
+    ("Historische Bruto BPM", "green", st.session_state.get("bruto_bpm", 0)),
+    ("Actuele Bruto BPM", "orange", "Nog niet beschikbaar"),
+    ("Rest BPM op basis van Afschrijvingstabel", "blue", st.session_state.get("rest_bpm_tabel", 0)),
+    ("Rest BPM op basis van Taxatie", "red", "Later beschikbaar")
+]:
+    st.markdown(f"""
+    <div style='padding: 10px; border-radius: 5px; border: 2px solid {color}; width: 100%; text-align: center;'>
+        <b>{label}</b><br>
+        {value}
+    </div>
+    """, unsafe_allow_html=True)
 
-# Toon huidige Python-versie
 st.write(f"Python versie: {sys.version}")
