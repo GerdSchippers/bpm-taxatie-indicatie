@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 
+# Laad BPM-gegevens
+@st.cache_data
 def load_bpm_data():
     data = {
         "Jaar": list(range(2013, 2026)),
@@ -16,19 +18,21 @@ def load_bpm_data():
     }
     return pd.DataFrame(data)
 
+# Afschrijvingstabel
+@st.cache_data
 def forfaitaire_afschrijving(leeftijd):
-    """Bereken de afschrijving volgens de forfaitaire tabel."""
     afschrijvingstabellen = {
         1: 0.91, 2: 0.81, 3: 0.72, 4: 0.63, 5: 0.55, 6: 0.47,
         7: 0.40, 8: 0.33, 9: 0.27, 10: 0.21, 11: 0.16, 12: 0.11
     }
-    return afschrijvingstabellen.get(leeftijd, 0.11)  # Minimaal 11% restwaarde
+    return afschrijvingstabellen.get(leeftijd, 0.11)
 
+# BPM berekening
+@st.cache_data
 def calculate_bpm(year, co2_emission, fuel_type, leeftijd):
     df = load_bpm_data()
     row = df[df["Jaar"] == year].iloc[0]
     
-    # Stap 1: Bruto BPM berekenen zonder afschrijving
     base_bpm = 0
     if co2_emission > row["BPM Vrijstelling (g/km CO₂)"]:
         base_bpm = (co2_emission - row["BPM Vrijstelling (g/km CO₂)"]) * row["Eerste schijf (€ per gram)"]
@@ -40,41 +44,33 @@ def calculate_bpm(year, co2_emission, fuel_type, leeftijd):
         diesel_surcharge = (co2_emission - row["Dieseltoeslag (g/km drempel)"]) * row["Dieseltoeslag (€ per gram)"]
     
     bruto_bpm = base_bpm + diesel_surcharge
-    
-    # Stap 2: Correcte afschrijving toepassen
     afschrijving_factor = forfaitaire_afschrijving(leeftijd)
-    rest_bpm_tabel = bruto_bpm * (1 - afschrijving_factor)  # Correcte toepassing van afschrijving
+    rest_bpm_tabel = bruto_bpm * (1 - afschrijving_factor)
     
-    return max(bruto_bpm, 0), max(rest_bpm_tabel, 0)  # Zorg ervoor dat BPM niet negatief wordt
+    return max(bruto_bpm, 0), max(rest_bpm_tabel, 0)
 
-def main():
-    st.set_page_config(page_title="BPM Taxatie Indicatie Calculator", layout="wide")
-    
-    st.title("BPM Taxatie Indicatie Calculator")
-    
-    if "bruto_bpm" not in st.session_state:
-        st.session_state.bruto_bpm = None
-        st.session_state.rest_bpm_tabel = None
-    
-    col1, col2 = st.columns([1, 1], gap="large")
-    
-    with col1:
-        st.header("Bereken BPM")
-        year = st.selectbox("Selecteer Jaar", list(range(2013, 2026)))
-        co2_emission = st.number_input("CO₂-uitstoot (g/km)", min_value=0, max_value=500, value=100)
-        fuel_type = st.selectbox("Brandstofsoort", ["Benzine", "Diesel", "PHEV", "EV"])
-        leeftijd = st.number_input("Leeftijd voertuig (maanden)", min_value=1, max_value=12, value=6)
-        
-        if st.button("Bereken BPM"):
-            st.session_state.bruto_bpm, st.session_state.rest_bpm_tabel = calculate_bpm(year, co2_emission, fuel_type, leeftijd)
-            st.experimental_rerun()
-        
-    if st.session_state.bruto_bpm is not None:
-        st.subheader("Resultaten")
-        st.write(f"**Historische Bruto BPM:** €{st.session_state.bruto_bpm:,.2f}")
-        st.write(f"**Actuele Bruto BPM:** Nog niet beschikbaar")
-        st.write(f"**Rest BPM op basis van Afschrijvingstabel:** €{st.session_state.rest_bpm_tabel:,.2f}")
-        st.write(f"**Rest BPM op basis van Taxatie:** Later beschikbaar")
+# Streamlit UI
+st.set_page_config(page_title="BPM Taxatie Calculator", layout="wide")
+st.title("BPM Taxatie Indicatie Calculator")
 
-if __name__ == "__main__":
-    main()
+col1, col2 = st.columns([1, 1], gap="large")
+
+with col1:
+    st.header("Bereken BPM")
+    year = st.selectbox("Selecteer Jaar", list(range(2013, 2026)))
+    co2_emission = st.number_input("CO₂-uitstoot (g/km)", min_value=0, max_value=500, value=100)
+    fuel_type = st.selectbox("Brandstofsoort", ["Benzine", "Diesel", "PHEV", "EV"])
+    leeftijd = st.number_input("Leeftijd voertuig (maanden)", min_value=1, max_value=12, value=6)
+    
+    if st.button("Bereken BPM"):
+        bruto_bpm, rest_bpm_tabel = calculate_bpm(year, co2_emission, fuel_type, leeftijd)
+        st.session_state.bruto_bpm = bruto_bpm
+        st.session_state.rest_bpm_tabel = rest_bpm_tabel
+        st.experimental_rerun()
+
+if "bruto_bpm" in st.session_state:
+    st.subheader("Resultaten")
+    st.write(f"**Historische Bruto BPM:** €{st.session_state.bruto_bpm:,.2f}")
+    st.write(f"**Actuele Bruto BPM:** Nog niet beschikbaar")
+    st.write(f"**Rest BPM op basis van Afschrijvingstabel:** €{st.session_state.rest_bpm_tabel:,.2f}")
+    st.write(f"**Rest BPM op basis van Taxatie:** Later beschikbaar")
