@@ -74,3 +74,6 @@ if "bruto_bpm" in st.session_state:
     st.write(f"**Actuele Bruto BPM:** Nog niet beschikbaar")
     st.write(f"**Rest BPM op basis van Afschrijvingstabel:** €{st.session_state.rest_bpm_tabel:,.2f}")
     st.write(f"**Rest BPM op basis van Taxatie:** Later beschikbaar")
+import streamlit as st
+import sys
+st.write(f"Python versie: {sys.version}")
