@@ -37,7 +37,7 @@ Afschrijvingstabellen = {
     2025: [0, 24, 32, 39, 45, 54, 63, 69, 74, 79, 84, 87, 90, 93]
 }
 
-# UI voor invoer
+# UI en berekeningen
 st.set_page_config(page_title="BPM Taxatie Calculator", layout="wide")
 st.title("BPM Taxatie Indicatie Calculator")
 
@@ -55,10 +55,6 @@ with col1:
         st.session_state.rest_bpm_tabel = rest_bpm_tabel
         st.rerun()
 
-# UI voor resultaten
 st.subheader("Resultaten")
-for label, color, value in [
-    ("Historische Bruto BPM", "green", st.session_state.get("bruto_bpm", 0)),
-    ("Rest BPM op basis van Afschrijvingstabel", "blue", st.session_state.get("rest_bpm_tabel", 0))
-]:
-    st.write(f"{label}: €{value:.2f}")
+st.write(f"**Historische Bruto BPM:** €{st.session_state.get('bruto_bpm', 0):,.2f}")
+st.write(f"**Rest BPM op basis van Afschrijvingstabel:** €{st.session_state.get('rest_bpm_tabel', 0):,.2f}")
