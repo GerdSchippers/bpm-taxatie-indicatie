@@ -69,7 +69,7 @@ col1, col2 = st.columns([1, 1], gap="large")
 
 with col1:
     st.header("Bereken BPM")
-    eerste_toelating = st.date_input("Eerste toelating voertuig (dag/maand/jaar)", min_value=date(2013, 1, 1), max_value=date.today())
+    eerste_toelating = st.date_input("Eerste toelating voertuig", format="%d-%m-%Y", min_value=date(2013, 1, 1), max_value=date.today())
     co2_emission = st.number_input("CO₂-uitstoot (g/km)", min_value=0, max_value=500, value=100)
     fuel_type = st.selectbox("Brandstofsoort", ["Benzine", "Diesel", "PHEV", "EV"])
     
