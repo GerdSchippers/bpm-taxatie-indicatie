@@ -47,9 +47,13 @@ def forfaitaire_afschrijving(leeftijd):
 
 # BPM berekening
 @st.cache_data
-def calculate_bpm(year, co2_emission, fuel_type, eerste_toelating):
+def calculate_bpm(co2_emission, fuel_type, eerste_toelating):
     df = load_bpm_data()
+    year = eerste_toelating.year
     row = df[df["Jaar"] == year].iloc[0]
+    
+    if eerste_toelating > date.today():
+        return None, "Fout: Eerste toelating kan niet in de toekomst liggen."
     
     base_bpm = 0
     if co2_emission > row["BPM Vrijstelling (g/km CO₂)"]:
@@ -65,7 +69,7 @@ def calculate_bpm(year, co2_emission, fuel_type, eerste_toelating):
     
     # Leeftijd berekenen op basis van eerste toelating
     today = date.today()
-    leeftijd_in_maanden = (today.year - eerste_toelating.year) * 12 + today.month - eerste_toelating.month
+    leeftijd_in_maanden = max((today.year - eerste_toelating.year) * 12 + today.month - eerste_toelating.month, 0)
     afschrijving_percentage = forfaitaire_afschrijving(leeftijd_in_maanden)
     rest_bpm_tabel = bruto_bpm * ((100 - afschrijving_percentage) / 100)
     
@@ -79,16 +83,18 @@ col1, col2 = st.columns([1, 1], gap="large")
 
 with col1:
     st.header("Bereken BPM")
-    year = st.selectbox("Selecteer Jaar", list(range(2013, 2026)))
+    eerste_toelating = st.date_input("Eerste toelating voertuig (dag/maand/jaar)", min_value=date(1990, 1, 1), max_value=date.today())
     co2_emission = st.number_input("CO₂-uitstoot (g/km)", min_value=0, max_value=500, value=100)
     fuel_type = st.selectbox("Brandstofsoort", ["Benzine", "Diesel", "PHEV", "EV"])
-    eerste_toelating = st.date_input("Eerste toelating voertuig", min_value=date(1990, 1, 1), max_value=date.today())
     
     if st.button("Bereken BPM"):
-        bruto_bpm, rest_bpm_tabel = calculate_bpm(year, co2_emission, fuel_type, eerste_toelating)
-        st.session_state.bruto_bpm = bruto_bpm
-        st.session_state.rest_bpm_tabel = rest_bpm_tabel
-        st.rerun()
+        bruto_bpm, rest_bpm_tabel = calculate_bpm(co2_emission, fuel_type, eerste_toelating)
+        if bruto_bpm is None:
+            st.error(rest_bpm_tabel)
+        else:
+            st.session_state.bruto_bpm = bruto_bpm
+            st.session_state.rest_bpm_tabel = rest_bpm_tabel
+            st.rerun()
 
 st.subheader("Resultaten")
 for label, color, value in [
