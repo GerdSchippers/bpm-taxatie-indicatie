@@ -3,21 +3,11 @@ import pandas as pd
 import sys
 from datetime import date
 
-# BPM-tarieven per jaar (2013 - 2025) op basis van de PDF
+# BPM-tarieven per jaar (2013 - 2025)
 BPM_TARIEVEN = {
-    2013: 45.2,
-    2014: 45.2,
-    2015: 42.3,
-    2016: 40.0,
-    2017: 37.7,
-    2018: 35.7,
-    2019: 34.2,
-    2020: 32.5,
-    2021: 31.0,
-    2022: 30.0,
-    2023: 29.0,
-    2024: 28.0,
-    2025: 27.4
+    2013: 45.2, 2014: 45.2, 2015: 42.3, 2016: 40.0, 2017: 37.7,
+    2018: 35.7, 2019: 34.2, 2020: 32.5, 2021: 31.0, 2022: 30.0,
+    2023: 29.0, 2024: 28.0, 2025: 27.4
 }
 
 # Forfaitaire afschrijvingstabellen per jaar
@@ -41,20 +31,17 @@ Afschrijvingstabellen = {
 @st.cache_data
 def calculate_bpm(co2_emission, fuel_type, eerste_toelating):
     year = eerste_toelating.year
-    bpm_tarief = BPM_TARIEVEN.get(year, 27.4)  # Default naar 2025 als jaar ontbreekt
+    bpm_tarief = BPM_TARIEVEN.get(year, 27.4)
     afschrijving_tabel = Afschrijvingstabellen.get(year, Afschrijvingstabellen[2025])
     
     if eerste_toelating > date.today():
         return None, "Fout: Eerste toelating kan niet in de toekomst liggen."
     
-    # Bruto BPM berekenen
     bruto_bpm = co2_emission * bpm_tarief
     
-    # Leeftijd berekenen in maanden
     today = date.today()
     leeftijd_in_maanden = max((today.year - eerste_toelating.year) * 12 + today.month - eerste_toelating.month, 0)
     
-    # Afschrijving bepalen
     afschrijving_index = min(leeftijd_in_maanden // 6, len(afschrijving_tabel) - 1)
     afschrijving_percentage = afschrijving_tabel[afschrijving_index]
     rest_bpm_tabel = bruto_bpm * ((100 - afschrijving_percentage) / 100)
@@ -69,9 +56,9 @@ col1, col2 = st.columns([1, 1], gap="large")
 
 with col1:
     st.header("Bereken BPM")
-    eerste_toelating = eerste_toelating = eerste_toelating = st.date_input("Eerste toelating voertuig", min_value=date(2013, 1, 1), max_value=date.today())
-st.write(f"Geselecteerde datum: {eerste_toelating.strftime('%d-%m-%Y')}"))
-st.write(f"Geselecteerde datum: {eerste_toelating.strftime('%d-%m-%Y')}"), min_value=date(2013, 1, 1), max_value=date.today())
+    eerste_toelating = st.date_input("Eerste toelating voertuig", min_value=date(2013, 1, 1), max_value=date.today())
+    st.write(f"Geselecteerde datum: {eerste_toelating.strftime('%d-%m-%Y')}")
+    
     co2_emission = st.number_input("CO₂-uitstoot (g/km)", min_value=0, max_value=500, value=100)
     fuel_type = st.selectbox("Brandstofsoort", ["Benzine", "Diesel", "PHEV", "EV"])
     
