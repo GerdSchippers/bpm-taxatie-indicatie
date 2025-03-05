@@ -103,10 +103,11 @@ for label, color, value in [
     ("Rest BPM op basis van Afschrijvingstabel", "blue", st.session_state.get("rest_bpm_tabel", 0)),
     ("Rest BPM op basis van Taxatie", "red", "Later beschikbaar")
 ]:
+    formatted_value = f"{value:.2f}" if isinstance(value, (int, float)) else value
     st.markdown(f"""
     <div style='text-align: left; font-weight: bold; padding-top: 5px;'>{label}</div>
     <div style='padding: 10px; border-radius: 5px; border: 2px solid {color}; width: 50%; text-align: left; font-size: 18px;'>
-        {value:.2f}
+        {formatted_value}
     </div>
     """, unsafe_allow_html=True)
 
