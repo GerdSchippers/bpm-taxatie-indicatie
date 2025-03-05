@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import sys
+from datetime import date
 
 # Laad BPM-gegevens uit pdf
 @st.cache_data
@@ -19,18 +20,34 @@ def load_bpm_data():
     }
     return pd.DataFrame(data)
 
-# Afschrijvingstabel
+# Forfaitaire afschrijvingstabel
 @st.cache_data
 def forfaitaire_afschrijving(leeftijd):
-    afschrijvingstabellen = {
-        1: 0.91, 2: 0.81, 3: 0.72, 4: 0.63, 5: 0.55, 6: 0.47,
-        7: 0.40, 8: 0.33, 9: 0.27, 10: 0.21, 11: 0.16, 12: 0.11
-    }
-    return afschrijvingstabellen.get(leeftijd, 0.11)
+    afschrijvingstabellen = [
+        (0, 1, 0, 12),
+        (1, 3, 12, 4),
+        (3, 5, 20, 3.5),
+        (5, 9, 27, 1.5),
+        (9, 18, 33, 1),
+        (18, 30, 42, 0.75),
+        (30, 42, 51, 0.5),
+        (42, 54, 57, 0.42),
+        (54, 66, 62, 0.42),
+        (66, 78, 67, 0.42),
+        (78, 90, 72, 0.25),
+        (90, 102, 75, 0.25),
+        (102, 114, 78, 0.25),
+        (114, 999, 81, 0.19)
+    ]
+    
+    for min_m, max_m, base, per_m in afschrijvingstabellen:
+        if leeftijd >= min_m and leeftijd < max_m:
+            return base + ((leeftijd - min_m) * per_m)
+    return 81  # Max afschrijving
 
 # BPM berekening
 @st.cache_data
-def calculate_bpm(year, co2_emission, fuel_type, leeftijd):
+def calculate_bpm(year, co2_emission, fuel_type, eerste_toelating):
     df = load_bpm_data()
     row = df[df["Jaar"] == year].iloc[0]
     
@@ -45,8 +62,12 @@ def calculate_bpm(year, co2_emission, fuel_type, leeftijd):
         diesel_surcharge = (co2_emission - row["Dieseltoeslag (g/km drempel)"]) * row["Dieseltoeslag (€ per gram)"]
     
     bruto_bpm = base_bpm + diesel_surcharge
-    afschrijving_factor = forfaitaire_afschrijving(leeftijd)
-    rest_bpm_tabel = bruto_bpm * (1 - afschrijving_factor)
+    
+    # Leeftijd berekenen op basis van eerste toelating
+    today = date.today()
+    leeftijd_in_maanden = (today.year - eerste_toelating.year) * 12 + today.month - eerste_toelating.month
+    afschrijving_percentage = forfaitaire_afschrijving(leeftijd_in_maanden)
+    rest_bpm_tabel = bruto_bpm * ((100 - afschrijving_percentage) / 100)
     
     return max(bruto_bpm, 0), max(rest_bpm_tabel, 0)
 
@@ -61,10 +82,10 @@ with col1:
     year = st.selectbox("Selecteer Jaar", list(range(2013, 2026)))
     co2_emission = st.number_input("CO₂-uitstoot (g/km)", min_value=0, max_value=500, value=100)
     fuel_type = st.selectbox("Brandstofsoort", ["Benzine", "Diesel", "PHEV", "EV"])
-    leeftijd = st.number_input("Leeftijd voertuig (maanden)", min_value=1, max_value=12, value=6)
+    eerste_toelating = st.date_input("Eerste toelating voertuig", min_value=date(1990, 1, 1), max_value=date.today())
     
     if st.button("Bereken BPM"):
-        bruto_bpm, rest_bpm_tabel = calculate_bpm(year, co2_emission, fuel_type, leeftijd)
+        bruto_bpm, rest_bpm_tabel = calculate_bpm(year, co2_emission, fuel_type, eerste_toelating)
         st.session_state.bruto_bpm = bruto_bpm
         st.session_state.rest_bpm_tabel = rest_bpm_tabel
         st.rerun()
@@ -79,7 +100,7 @@ for label, color, value in [
     st.markdown(f"""
     <div style='text-align: left; font-weight: bold; padding-top: 5px;'>{label}</div>
     <div style='padding: 10px; border-radius: 5px; border: 2px solid {color}; width: 50%; text-align: left; font-size: 18px;'>
-        {value}
+        {value:.2f}
     </div>
     """, unsafe_allow_html=True)
 
