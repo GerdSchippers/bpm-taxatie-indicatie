@@ -71,10 +71,24 @@ with col1:
 
 if "bruto_bpm" in st.session_state:
     st.subheader("Resultaten")
-    st.write(f"**Historische Bruto BPM:** €{st.session_state.bruto_bpm:,.2f}")
-    st.write(f"**Actuele Bruto BPM:** Nog niet beschikbaar")
-    st.write(f"**Rest BPM op basis van Afschrijvingstabel:** €{st.session_state.rest_bpm_tabel:,.2f}")
-    st.write(f"**Rest BPM op basis van Taxatie:** Later beschikbaar")
+    with st.container():
+        st.markdown("""
+        <div style='border: 2px solid green; padding: 10px; border-radius: 10px;'>
+            <b>Historische Bruto BPM:</b> €{:.2f}
+        </div>
+        <br>
+        <div style='border: 2px solid orange; padding: 10px; border-radius: 10px;'>
+            <b>Actuele Bruto BPM:</b> Nog niet beschikbaar
+        </div>
+        <br>
+        <div style='border: 2px solid blue; padding: 10px; border-radius: 10px;'>
+            <b>Rest BPM op basis van Afschrijvingstabel:</b> €{:.2f}
+        </div>
+        <br>
+        <div style='border: 2px solid red; padding: 10px; border-radius: 10px;'>
+            <b>Rest BPM op basis van Taxatie:</b> Later beschikbaar
+        </div>
+        """.format(st.session_state.bruto_bpm, st.session_state.rest_bpm_tabel), unsafe_allow_html=True)
 
 # Toon huidige Python-versie
 st.write(f"Python versie: {sys.version}")
